@@ -1,17 +1,16 @@
-**Participation repository site:**
+Participation repository site:
 https://github.com/lconover1/DataSci-participation
-	*mine.  Individual account
+(mine.  Individual account)
 
-**Homework repository site:**
+Homework repository site:
 https://github.com/USF-Psych-DataSci-2020/DataSci-hw-lconover1
-	*mine.  Individual account
+(mine.  Individual account)
 
-**My user page:**
+My user page:
 https://github.com/lconover1
-	*mine.  Individual account
+(mine.  Individual account)
 
-**Class page:**
+Class page:
 https://github.com/USF-Psych-DataSci/DataSci-home
-	*[USF-Psych-DataSci] (https://github.com/USF-Psych-DataSci-2020) organization account
-
-test change here
+(from the USF-Psych-DataSci organization account.  JUUUSST in case you can't get to the site directly.)
+ test change here
