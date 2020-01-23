@@ -1,0 +1,32 @@
+---
+title: "RMarkdown exploration"
+author: "Laura Conover"
+date: "1/23/2020"
+output: html_document
+---
+
+```{r echo=FALSE}
+# install.packages('gapminder')
+# install.packages('tibble')
+# install.packages('DT')
+#since you really shouldn't have to install them multiple times, and it won't show the code this way
+```
+
+```{r}
+#You do have to load libraries every time though
+library(gapminder)
+library(tibble)
+library(DT)
+```
+
+Population data for a number of countries
+```{r echo=FALSE}
+gapminder
+```
+
+Car data
+```{r echo=FALSE}
+mtcars
+```
+
+The average gas miles per gallon was `r mean(mtcars$mpg)`.  This line is an example of in-line code, as the value is generated from the dataset called.
