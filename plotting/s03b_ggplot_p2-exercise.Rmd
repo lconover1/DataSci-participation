@@ -178,6 +178,12 @@ mtcars %>%
   ggplot(aes(x = factor(cyl))) +
   geom_bar(aes(y = ..prop.., color = transmission, fill = transmission), position = "dodge")
 
+mtcars %>% 
+  mutate(transmission = if_else(am == 0, "automatic", "manual")) %>% 
+  ggplot(aes(cyl)) +
+  geom_bar(aes(y = ..prop.., color = transmission, fill = transmission), position = "dodge")
+
+#I can get proportions on the y axis OR discreet variables on the x axis, but not both.
 ```
 
 ### 6(b) Bar heights already calculated
