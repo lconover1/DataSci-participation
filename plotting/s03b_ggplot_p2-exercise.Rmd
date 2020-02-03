@@ -173,21 +173,25 @@ gapminder %>%
 - Capitalize the legend title.
 
 ```{r, fig.width = 5, fig.height = 2}
-mtcars %>% 
-  mutate(transmission = if_else(am == 0, "automatic", "manual")) %>% 
-  ggplot(aes(x = factor(cyl))) +
-  geom_bar(aes(y = ..prop.., color = "black", fill = transmission), position = "dodge")
+# mtcars %>% 
+#   mutate(transmission = if_else(am == 0, "automatic", "manual")) %>% 
+#   ggplot(aes(x = factor(cyl))) +
+#   geom_bar(aes(y = ..prop.., fill = transmission), position = "dodge")
+# 
+# mtcars %>% 
+#   mutate(transmission = if_else(am == 0, "automatic", "manual")) %>% 
+#   ggplot(aes(x = factor(cyl))) +
+#   geom_bar(aes(fill = transmission), position = "dodge")
+# 
+# mtcars %>% 
+#   mutate(transmission = if_else(am == 0, "automatic", "manual")) %>% 
+#   ggplot(aes(cyl)) +
+#   geom_bar(aes(y = ..prop.., fill = transmission), position = "dodge")
 
 mtcars %>% 
   mutate(transmission = if_else(am == 0, "automatic", "manual")) %>% 
   ggplot(aes(x = factor(cyl))) +
-  geom_bar(aes(color = "black", fill = transmission), position = "dodge")
-
-mtcars %>% 
-  mutate(transmission = if_else(am == 0, "automatic", "manual")) %>% 
-  ggplot(aes(cyl)) +
-  geom_bar(aes(y = ..prop.., color = "black", fill = transmission), position = "dodge")
-
+  geom_bar(aes(fill = transmission), position = "fill")
 #I can get proportions on the y axis OR discreet variables on the x axis, but not both.
 ```
 
