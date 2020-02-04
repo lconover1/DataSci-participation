@@ -173,26 +173,11 @@ gapminder %>%
 - Capitalize the legend title.
 
 ```{r, fig.width = 5, fig.height = 2}
-# mtcars %>% 
-#   mutate(transmission = if_else(am == 0, "automatic", "manual")) %>% 
-#   ggplot(aes(x = factor(cyl))) +
-#   geom_bar(aes(y = ..prop.., fill = transmission), position = "dodge")
-# 
-# mtcars %>% 
-#   mutate(transmission = if_else(am == 0, "automatic", "manual")) %>% 
-#   ggplot(aes(x = factor(cyl))) +
-#   geom_bar(aes(fill = transmission), position = "dodge")
-# 
-# mtcars %>% 
-#   mutate(transmission = if_else(am == 0, "automatic", "manual")) %>% 
-#   ggplot(aes(cyl)) +
-#   geom_bar(aes(y = ..prop.., fill = transmission), position = "dodge")
-
 mtcars %>% 
   mutate(transmission = if_else(am == 0, "automatic", "manual")) %>% 
-  ggplot(aes(x = factor(cyl))) +
-  geom_bar(aes(fill = transmission), position = "fill")
-#I can get proportions on the y axis OR discreet variables on the x axis, but not both.
+  ggplot(aes(cyl, ..prop..)) +
+  geom_bar(aes(fill = transmission), position = "dodge") +
+  scale_x_continuous(breaks = c(4, 6, 8)) # Or change cyl to factor(cyl)
 ```
 
 ### 6(b) Bar heights already calculated
