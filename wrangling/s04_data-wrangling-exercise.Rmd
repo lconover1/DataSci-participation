@@ -36,6 +36,9 @@ Hint: You can add the `suppressPackageStartupMessages()` function around the
 # load your packages here:
 suppressPackageStartupMessages(library(gapminder))
 suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(psych))
+suppressPackageStartupMessages(library(tsibble))
+
 ```
     
 
@@ -110,8 +113,7 @@ select(mtcars,am,everything())
 
 5.Rename a column
 ```{r}
-select(mtcars, mpg = miles/gallon, everything())
-#this one isn't working?
+rename(mtcars,milespergallon = mpg)
 ```
 ## `arrange()`
 
@@ -275,10 +277,19 @@ Let's do some practice with grouping (and ungrouping) and summarizing data frame
 1. (a) What's the minimum life expectancy for each continent and each year? (b) Add the corresponding country to the tibble, too. (c) Arrange by min life expectancy.
 
 ```{r}
+#I'm not sure how to add the country to the tibble though
 gapminder %>% 
-  group_by(FILL_THIS_IN) %>% 
-  FILL_THIS_IN(min_life = min(lifeExp))
+  group_by(continent) %>% 
+  summarize(min_life = min(lifeExp),min_country = "idk") %>%
+  arrange(min_life)
+
+gapminder %>% 
+  group_by(year) %>% 
+  summarize(min_life = min(lifeExp),min_country = "idk") %>% 
+  arrange(min_life)
+
 ```
+
 
 
 2. Let's compute the mean Agreeableness score across items for each participant 
@@ -297,6 +308,15 @@ Now compute mean scores for the other Big Five traits, as well as
 `sd` and `min` scores for reach person.
 
 ```{r}
+psych::bfi %>%
+  as_tibble() %>% 
+  select(C1:C5) %>% 
+  rowwise() %>% 
+  mutate(C_mean = mean(c(C1, C2, C3, C4, C5), na.rm = TRUE)) %>% 
+  mutate(C_sd = SD(c(C1, C2, C3, C4, C5), na.rm = TRUE)) %>% 
+  mutate(C_min = min(c(C1, C2, C3, C4, C5), na.rm = TRUE)) %>% 
+  ungroup()
+#This would be the same code for each trait, just change the variable names
 
 ```
 
@@ -337,7 +357,11 @@ group_by(country) %>%
 ```
 
 ```{r}
-
+gapminder %>% 
+  group_by(country) %>% 
+  arrange(year) %>% 
+  mutate(rel_growth = last(pop)-first(pop)) %>% 
+  knitr::kable()
 ```
 
 
@@ -348,20 +372,21 @@ compute changes in a variable across rows of data (e.g., for time-series data)
 is `tsibble::difference()`:
 
 ```
-drop_na() %>% 
-ungroup() %>% 
-arrange(year) %>% 
 filter(inc_life_exp == min(inc_life_exp)) %>% 
-gapminder %>% 
-mutate(inc_life_exp = FILL_THIS_IN) %>% # Compute the changes in life expectancy
-arrange(inc_life_exp) %>% 
-group_by(country) %>% 
-group_by(continent) %>% 
 knitr::kable()
 ```
 
 ```{r}
-
+gapminder %>% 
+  group_by(country) %>% 
+  arrange(year) %>% 
+  mutate(inc_life_exp = difference(lifeExp,lag = 5)) %>%   # Compute the changes in life expectancy
+  ungroup() %>% 
+  drop_na() %>% 
+  group_by(continent) %>% 
+  arrange(inc_life_exp) %>% 
+  filter(inc_life_exp == min(inc_life_exp)) %>% 
+  knitr::kable()
 ```
 
 
