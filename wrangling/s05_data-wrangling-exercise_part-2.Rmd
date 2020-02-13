@@ -73,7 +73,12 @@ edit_iris <- iris %>%
    axis labels nicely.
 
 ```{r}
-
+edit_iris %>% 
+  ggplot(aes(species,sepal_width)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.5) +
+  ylab ("Sepal Width (cm)") +
+  theme_light()
 ```
 
 5. `iris` expresses all of the measurements in centimeters. Convert them to 
