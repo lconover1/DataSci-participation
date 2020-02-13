@@ -85,6 +85,8 @@ edit_iris %>%
    inches (1 in = 2.54 cm). Store this dataset as a new object.
 
 ```{r}
+US_iris<-iris %>% 
+  mutate(Sepal.Length = Sepal.Length/2.54, Sepal.Width = Sepal.Width/2.54, Petal.Length = Petal.Length/2.54, Petal.Width = Petal.Width/2.54)
 ```
 
 6. Using the data from Task 5, plot the relationship between sepal width and
