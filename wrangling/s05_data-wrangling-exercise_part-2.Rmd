@@ -63,6 +63,9 @@ all of the commands in a task using the pipe `%>%`.
    a new object.
 
 ```{r}
+edit_iris <- iris %>% 
+  rename_all(~ tolower(str_replace_all(.x, "\\.", "_"))) %>% 
+  select(species,everything())
 ```
 
 4. Using the data from Task 3, plot the sepal width for each species. Perhaps 
@@ -70,6 +73,7 @@ all of the commands in a task using the pipe `%>%`.
    axis labels nicely.
 
 ```{r}
+
 ```
 
 5. `iris` expresses all of the measurements in centimeters. Convert them to 
