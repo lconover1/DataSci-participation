@@ -28,7 +28,7 @@ Load the `tidyverse` package.
     
 ```{r load packages, warning = FALSE, message = FALSE}
 # load your packages here:
-library(FILL_THIS_IN)
+library(tidyverse)
 ```
     
 
@@ -43,11 +43,16 @@ all of the commands in a task using the pipe `%>%`.
    with a descriptive object name.
 
 ```{r}
+six_cyl <- mtcars %>% 
+  as_tibble(rownames = "car_type") %>% 
+  filter(cyl == 6) %>% 
+  select(car_type,mpg,hp)
 ```
 
 2. Print the results from Task 1 in an appealing way by using `knitr::kable()`.
 
 ```{r}
+knitr::kable(six_cyl)
 ```
 
 Let's use the `iris` dataset. Complete the following tasks. Chain together
