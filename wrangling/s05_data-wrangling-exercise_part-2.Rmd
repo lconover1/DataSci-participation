@@ -29,6 +29,7 @@ Load the `tidyverse` package.
 ```{r load packages, warning = FALSE, message = FALSE}
 # load your packages here:
 library(tidyverse)
+library(gapminder)
 ```
     
 
@@ -117,10 +118,34 @@ US_iris %>%
 
 Let's head back to the guide at the section on `summarize()`.
 
+```{r}
+#getting a table with a summary of multiple columns at once:
+iris %>% 
+  summarize_if(is.numeric, funs(mean=mean, sd= sd))
+```
 
 # Exercises for grouped data frames
 
 Let's do some practice with grouping (and ungrouping) and summarizing data frames!
+
+```{r}
+#counting unique entries under a group
+gapminder %>% 
+  group_by(continent) %>% 
+  summarise(n_countries = n_distinct(country))
+#OR: n_countries = length(unique(country))
+```
+
+## How to use lag()!!!
+```{r}
+gap_inc <- gapminder %>% 
+  arrange(year) %>% 
+  group_by(country) %>%
+  mutate(gdpPercap_inc = gdpPercap - lag(gdpPercap)) %>% 
+  arrange(country)
+print(gap_inc)
+```
+
 
 1. (a) What's the minimum life expectancy for each continent and each year? 
    (b) Add the corresponding country to the tibble, too. 
@@ -128,8 +153,9 @@ Let's do some practice with grouping (and ungrouping) and summarizing data frame
 
 ```{r}
 gapminder %>% 
-  group_by(FILL_THIS_IN) %>% 
-  FILL_THIS_IN(min_life = min(lifeExp))
+  group_by(continent, year) %>% 
+  summarize(min_life = min(lifeExp)) %>% 
+  arrange(min_life)
 ```
 
 
@@ -140,16 +166,22 @@ in the `psych::bfi` dataset. Be sure to handle `NA`!
 psych::bfi %>%
   as_tibble() %>% 
   select(A1:A5) %>% 
-  rowwise() %>% 
+  rowwise() %>% #this lets you compute values per person, essentially another form of group.  Otherwise, you'll get averages over the whole set
   mutate(A_mean = mean(c(A1, A2, A3, A4, A5), na.rm = TRUE)) %>% 
   ungroup()
 ```
 
 Now compute mean scores for Conscientiousness, as well as `sd` and `min` scores 
-for reach person.
+for each person.
 
 ```{r}
-
+psych::bfi %>%
+  rownames_to_column(var = "id") %>% 
+  as_tibble() %>% 
+  select(id, C1:C5) %>% 
+  rowwise() %>% 
+  mutate(C_mean = mean(c(C1, C2, C3, C4, C5),na.rm = TRUE), C_sd = sd(c(C1, C2, C3, C4, C5),na.rm = TRUE), C_min = min(c(C1, C2, C3, C4, C5),na.rm = TRUE)) %>% 
+  ungroup()
 ```
 
 Some functions are **vectorized**, so you don't need `rowwise()`. 
@@ -192,14 +224,17 @@ psych::bfi %>%
 ```
 
 3. Let's use `psych::bfi` and make a new data frame that has
-   (1) each participant's educational level (convert it to a categorical variable
-   using `factor*()`) and the mean score for each of the Big Five scales for each 
+   each participant's educational level (convert it to a categorical variable
+   using `factor()`) and the mean score for each of the Big Five scales for each 
    participant. Store this data frame as a new object.
    
 ```{r}
-FILL_THIS_IN <-
+new_scores <-
   psych::bfi %>% 
-  FILL_THIS_IN(FILL_THIS_IN)
+  as_tibble() %>% 
+  mutate(A_mean = rowMeans(select(.,A1:A5),na.rm = TRUE),C_mean = rowMeans(select(.,C1:C5),na.rm = TRUE), E_mean = rowMeans(select(.,E1:E5),na.rm = TRUE), N_mean = rowMeans(select(.,N1:N5),na.rm = TRUE), O_mean = rowMeans(select(.,O1:O5),na.rm = TRUE), edu = factor(education),na.rm = TRUE) %>% 
+  select(edu, A_mean, C_mean, E_mean, N_mean, O_mean) %>% 
+  print
 ```
 
 4. Use the data from Task 3 to summarize the distributions of Big Five scores 
@@ -207,9 +242,10 @@ FILL_THIS_IN <-
    each score in each group). Also report the sample size within each group.
    
 ```{r}
-FILL_THIS_IN %>% 
-  FILL_THIS_IN(FILL_THIS_IN) %>% 
-  FILL_THIS_IN(FILL_THIS_IN)
+new_scores %>% 
+  group_by(edu) %>% 
+  summarise(mean_A = mean(A_mean), mean_C = mean(C_mean), mean_E = mean(E_mean), mean_N = mean(N_mean, mean_O = mean(O_mean)))
+#sd, min, and max are computed the same way as mean, using the sd(), min(), and max() functions, respectively
 ```  
 
 
