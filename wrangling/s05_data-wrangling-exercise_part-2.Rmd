@@ -93,6 +93,9 @@ US_iris<-iris %>%
    sepal length. Indicate species using color and point shape.
 
 ```{r}
+US_iris %>% 
+  ggplot(aes(Sepal.Length, Sepal.Width, color = Species, shape = Species)) +
+  geom_point()
 ```
 
 7. Using the data from Task 5, plot the relationship between sepal width and
