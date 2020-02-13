@@ -46,7 +46,8 @@ all of the commands in a task using the pipe `%>%`.
 six_cyl <- mtcars %>% 
   as_tibble(rownames = "car_type") %>% 
   filter(cyl == 6) %>% 
-  select(car_type,mpg,hp)
+  select(car_type,mpg,hp) %>% 
+  print
 ```
 
 2. Print the results from Task 1 in an appealing way by using `knitr::kable()`.
@@ -65,7 +66,8 @@ all of the commands in a task using the pipe `%>%`.
 ```{r}
 edit_iris <- iris %>% 
   rename_all(~ tolower(str_replace_all(.x, "\\.", "_"))) %>% 
-  select(species,everything())
+  select(species,everything()) %>% 
+  print
 ```
 
 4. Using the data from Task 3, plot the sepal width for each species. Perhaps 
@@ -76,7 +78,7 @@ edit_iris <- iris %>%
 edit_iris %>% 
   ggplot(aes(species,sepal_width)) +
   geom_boxplot() +
-  geom_jitter(alpha = 0.5) +
+  geom_jitter(alpha = 0.3) +
   ylab ("Sepal Width (cm)") +
   theme_light()
 ```
@@ -87,6 +89,7 @@ edit_iris %>%
 ```{r}
 US_iris<-iris %>% 
   mutate(Sepal.Length = Sepal.Length/2.54, Sepal.Width = Sepal.Width/2.54, Petal.Length = Petal.Length/2.54, Petal.Width = Petal.Width/2.54)
+#reminder that for tidyverse mutate, select, rename stuff, the format is "new name" = "old name"
 ```
 
 6. Using the data from Task 5, plot the relationship between sepal width and
@@ -103,6 +106,10 @@ US_iris %>%
    (facet).
 
 ```{r}
+US_iris %>% 
+  ggplot(aes(Sepal.Length, Sepal.Width)) +
+  geom_point() +
+  facet_grid(~Species)
 ```
 
 
