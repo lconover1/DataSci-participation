@@ -87,11 +87,11 @@ guest %>%
 ```{r}
 guest_long <- guest %>% 
   pivot_longer(cols      = c(-party, -name), 
-               names_to  = c("type", "event"),
+               names_to  = c(".value", "event"),
                names_sep = "_",
                values_to = "response") %>% 
   print()
-# erm. i don't think this is what was asked for
+#I still don't really understand how I got here but I did
 ```
 
 2. Use `tidyr::separate()` to split the name into two columns: "first" and 
@@ -99,14 +99,14 @@ guest_long <- guest %>%
 
 ```{r}
 guest_long %>% 
-  separate(FILL_THIS_IN, into = FILL_THIS_IN)
-  # unite(col = "name", FILL_THIS_IN, sep = FILL_THIS_IN)
+  separate(name, into = c("first","last"), sep = " ") %>% 
+  unite(col = "name", c("first","last"), sep = " ")
 ```
 
 3. Which parties still have a "PENDING" status for all members and all events?
 
 ```{r}
-FILL_THIS_IN %>% 
+guest_long %>% 
   group_by(party) %>% 
   summarize(all_pending = all(attendance == "PENDING"))
 ```
@@ -114,9 +114,9 @@ FILL_THIS_IN %>%
 4. Which parties still have a "PENDING" status for all members for the wedding?
 
 ```{r}
-FILL_THIS_IN %>% 
+guest %>% 
   group_by(party) %>% 
-  summarize(pending_wedding = all(FILL_THIS_IN == "PENDING"))
+  summarize(pending_wedding = all(attendance_wedding == "PENDING"))
 ```
 
 
@@ -124,10 +124,11 @@ FILL_THIS_IN %>%
 
 ```{r}
 guest_long %>% 
-  pivot_wider(id_cols     = FILL_THIS_IN, 
-              names_from  = FILL_THIS_IN, 
+  pivot_wider(id_cols     = c(party, name), 
+              names_from  = event, 
               names_sep   = "_", 
-              values_from = FILL_THIS_IN)
+              values_from = c(meal, attendance)) %>% 
+  select(-meal_golf)
 ```
 
 6. You also have a list of emails for each party, in this worksheet under the 
@@ -136,7 +137,7 @@ guest_long %>%
 
 ```{r}
 email %>% 
-  separate_rows(FILL_THIS_IN, sep = FILL_THIS_IN)
+  separate_rows(guest, sep = ",")
 ```
 
 
