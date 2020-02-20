@@ -18,8 +18,27 @@ email <- read_csv("https://raw.githubusercontent.com/USF-Psych-DataSci/Classroom
 ```{r allow errors, echo = FALSE}
 knitr::opts_chunk$set(error = TRUE, warning = FALSE)
 ```
+## Example
+``` {r}
+#creates an untidy table
+haireye_untidy <- haireye %>% 
+  mutate(eye = str_c(eye, "_eyed")) %>% 
+  pivot_wider(id_cols = hair, names_from = eye, values_from = n)
 
+haireye_untidy
+```
+  Making it tidy (two options):
+```{r}
+haireye_untidy %>% 
+  pivot_longer(cols      = contains("eyed"),
+               names_to  = "eye",
+               values_to = "n")
 
+#haireye_untidy %>% 
+#  pivot_longer(cols      = c(Blue_eyed, Brown_eyed, Green_eyed, Hazel_eyed),
+#               names_to  = "eye",
+#               values_to = "n")
+```
 ## Exercise 1: Univariate Pivoting
 
 Consider the Lord of the Rings data:
@@ -29,25 +48,25 @@ lotr
 ```
 
 1. Would you say this data is in tidy format?
+_Yes, assuming that you are treating each combination of race/gender in each film as one observation._
 
-   <!-- Describe why or why not in this space. -->
 
 2. Widen the data so that we see the words spoken by each race, by putting race as its own column.
 
 ```{r}
 (lotr_wide <- lotr %>% 
-  pivot_wider(FILL_THIS_IN = c(-Race, -Words), 
-              FILL_THIS_IN = Race, 
-              FILL_THIS_IN = Words))
+  pivot_wider(id_cols = c(-Race, -Words), 
+              names_from = Race, 
+              values_from = Words))
 ```
 
 3. Re-lengthen the wide LOTR data from Question 2 above.
 
 ```{r}
 lotr_wide %>% 
-  pivot_longer(FILL_THIS_IN = FILL_THIS_IN, 
-               names_to  = FILL_THIS_IN, 
-               values_to = FILL_THIS_IN)
+  pivot_longer(cols = c(Elf, Hobbit, Man), 
+               names_to  = "Race", 
+               values_to = "Words")
 ```
 
 
@@ -66,10 +85,13 @@ guest %>%
 1. Put "meal" and "attendance" as their own columns, with the events living in a new column.
 
 ```{r}
-(guest_long <- guest %>% 
-  pivot_longer(cols      = FILL_THIS_IN, 
-               names_to  = FILL_THIS_IN,
-               FILL_THIS_IN))
+guest_long <- guest %>% 
+  pivot_longer(cols      = c(-party, -name), 
+               names_to  = c("type", "event"),
+               names_sep = "_",
+               values_to = "response") %>% 
+  print()
+# erm. i don't think this is what was asked for
 ```
 
 2. Use `tidyr::separate()` to split the name into two columns: "first" and 
