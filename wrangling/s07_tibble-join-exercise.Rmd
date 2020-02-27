@@ -8,14 +8,26 @@ output:
 
 ## Requirements
 
-You will need data from Joey Bernhardt's `singer` R package for this exercise. 
+You will need data from Joey Bernhardt's `singer` R package for this exercise.
+
+
+Load required packages:
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(singer)
+knitr::opts_chunk$set(fig.width=4, fig.height=3, warning = FALSE, fig.align = "center")
+```
 
 You can download the singer data from the `USF-Psych-DataSci/Classroom` repo:
 
-```
+```{r}
 songs <- read_csv("https://github.com/USF-Psych-DataSci/Classroom/raw/master/data/singer/songs.csv")
-locations <- read_csv(https://github.com/USF-Psych-DataSci/Classroom/raw/master/data/singer/loc.csv")
+locations <- read_csv("https://github.com/USF-Psych-DataSci/Classroom/raw/master/data/singer/loc.csv")
 ```
+
+read_csv is different than base R read.csv, because read_csv lets you tell R what TYPE of data (factor, continuous, text, w/e) you want it to be treated as.  To change, it would be something like read_csv("Title", na = c("NA"))
+
 
 If you want, you could instead install the `singer` package itself. To do that,
 you'll need to install `devtools`. Running this code in your console should do 
@@ -26,13 +38,6 @@ install.packages("devtools")
 devtools::install_github("JoeyBernhardt/singer")
 ```
 
-Load required packages:
-
-```{r, echo = FALSE, warning = FALSE, message = FALSE}
-library(tidyverse)
-library(singer)
-knitr::opts_chunk$set(fig.width=4, fig.height=3, warning = FALSE, fig.align = "center")
-```
 
 <!-- The following chunk allows errors when knitting -->
 
@@ -63,7 +68,7 @@ Let's take a look at them (after minor modifications by renaming and shuffling):
 
 ```{r}
 time %>% 
-  FILL_THIS_IN(album, by = FILL_THIS_IN)
+  semi_join(album, by = "song")
 ```
 
 2. Go ahead and add the corresponding albums to the `time` tibble, being sure to 
@@ -71,21 +76,21 @@ time %>%
 
 ```{r}
 time %>% 
-  FILL_THIS_IN(album, by = FILL_THIS_IN)
+  left_join(album, by = "song")
 ```
 
 3. Which songs do we have "year", but not album info?
 
 ```{r}
 time %>% 
-  FILL_THIS_IN(album, by = "song")
+  anti_join(album, by = "song")
 ```
 
 4. Which artists are in `time`, but not in `album`?
 
 ```{r}
 time %>% 
-  anti_join(album, by = "FILL_THIS_IN")
+  anti_join(album, by = "artist_name")
 ```
 
 
@@ -93,8 +98,8 @@ time %>%
    available in one tibble. What would you do?
 
 ```{r}
-FILL_THIS_IN %>% 
-  FILL_THIS_IN(FILL_THIS_IN, by = "song")
+time %>% 
+  full_join(album, by = "song")
 ```
 
 
