@@ -68,7 +68,7 @@ Let's take a look at them (after minor modifications by renaming and shuffling):
 
 ```{r}
 time %>% 
-  semi_join(album, by = "song")
+  inner_join(album, by = c("song", "artist_name"))
 ```
 
 2. Go ahead and add the corresponding albums to the `time` tibble, being sure to 
@@ -76,7 +76,7 @@ time %>%
 
 ```{r}
 time %>% 
-  left_join(album, by = "song")
+  left_join(album, by = c("song", "artist_name"))
 ```
 
 3. Which songs do we have "year", but not album info?
@@ -99,7 +99,7 @@ time %>%
 
 ```{r}
 time %>% 
-  full_join(album, by = "song")
+  full_join(album, by = c("song", "artist_name"))
 ```
 
 
