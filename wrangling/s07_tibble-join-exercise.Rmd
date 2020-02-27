@@ -116,16 +116,19 @@ retk <- read_csv("https://raw.githubusercontent.com/jennybc/lotr-tidy/master/dat
 1. Combine these into a single tibble.
 
 ```{r}
-FILL_THIS_IN(fell, FILL_THIS_IN)
+full_join(fell, ttow) %>% 
+  full_join(retk)
 ```
 
 2. Which races are present in "The Fellowship of the Ring" (`fell`), but not in 
    any of the other ones?
+   
+   _ok, so... I've LOTR and I'm pretty sure elf, human, and hobbit characters exist in all 3 books_
 
 ```{r}
 fell %>% 
   anti_join(ttow, by = "Race") %>% 
-  FILL_THIS_IN(FILL_THIS_IN, by = "Race")
+  anti_join(retk, by = "Race")
 ```
 
 
