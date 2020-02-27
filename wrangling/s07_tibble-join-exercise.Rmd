@@ -15,7 +15,7 @@ Load required packages:
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 library(tidyverse)
-library(singer)
+#library(singer)
 knitr::opts_chunk$set(fig.width=4, fig.height=3, warning = FALSE, fig.align = "center")
 ```
 
