@@ -165,3 +165,19 @@ union_all(
 ```{r}
 setdiff(y, z)
 ```
+
+## Extra!
+
+``` {r}
+#install.packages("nycflights13")
+library(nycflights13)
+```
+
+Combine all variables from all the tables into one table.  R can automatically pick what to join by so long as the variables have the same names!
+```{r}
+all <- left_join(flights, planes) %>% 
+  left_join(airlines) %>% 
+  left_join(airports, by = c("origin" = "faa")) %>% 
+  left_join(airports, by = c("dest" = "faa")) %>% 
+  left_join(weather)
+```
