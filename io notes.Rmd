@@ -1,0 +1,189 @@
+---
+title: "File I/O"
+output: 
+  html_document:
+  keep_md: true
+  theme: paper
+---
+
+There is no worksheet today.  Most of the information is in the guide online: https://wiernik-datasci-guide.netlify.com/file-inputoutput-io.html
+
+In general, avoid Excel because it messes with your data a lot.
+
+``` {r}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(gapminder))
+```
+
+Filter gapminder to just countries in Asia in 2007:
+```{r}
+(gap_asia_2007 <- gapminder %>% filter(year == 2007, continent == "Asia"))
+#the parentheses will make R automatically print out the new saved tibble, without using a line for the print command
+```
+
+Write it to a csv file:
+```{r}
+write_csv(gap_asia_2007, "exported_file.csv")
+#where this saves is determined by how you opened R.  So, you need a better way to save it.
+```
+
+Using "setwd()" will only work on this computer, or a computer that has EXACTLY the same folder paths.  So it's not portable, and you reallly shouldn't use it.
+
+Instead, put each project in its own, self-contained folder.  Open R through that folder, and all of the files (in and out) will be together, and you can easily share the folder with others.
+
+If you're gonna work on a new project, start a new R session.  Don't try to have multiple projects open in the same session.
+
+In order to save things all the right places, the major function is `here::here()`. It lets you specify a path to a file and then adds the system-appropriate separators (/ or \\). Where `here::here()` shines is that it figures out better where the relative paths should start from. It looks round in the folders in your directory and finds the .Rproj file, then constructs the relative file paths from there.
+
+Saving the `gap_asia_2007` to a findable place:
+```{r}
+write_csv(gap_asia_2007, here::here("data", "s008_data", "exported_file.csv"))
+#you do have to have the 'data' and 's008_data' folders already created
+```
+
+To create a folder in R code rather than by point-and-click in Windows:
+```{r}
+dir.create(here::here("data", "s008_data"), recursive = TRUE)
+```
+
+
+To read that same file back in:
+```{r}
+read_csv(here::here("data", "s008_data", "exported_file.csv"))
+#note this doesn't save the tibble.  you still have to assign it to an object
+```
+
+One of the most important options to set is the na argument, which specifies what values to treat as NA on import. By default, read_csv() treats blank cells (i.e., "") and cells with "NA" as missing. You might need to change this (e.g., if missing values are entered as -999). If you don't do this, R might take something like "N/A" as character text, and then the entire column is treated as characters rather than numbers!
+
+-----
+## Downloading things from the web!
+
+To import a CSV file from a web, assign the URL to a variable and then apply `read_csv` to the variable.
+
+```{r}
+url <- "http://gattonweb.uky.edu/sheather/book/docs/datasets/magazines.csv"
+read_csv(url)
+#note this is still not saved.  That would be done by assigning a new object at the 'read_csv' line
+```
+
+For Excel files, you do have to download the file first.
+```{r}
+library(readxl) 
+```
+
+To download it, create a new object called `xls_url` and then use `download.file` to download it to a specified destination path.
+
+```{r}
+xls_url <- "http://gattonweb.uky.edu/sheather/book/docs/datasets/GreatestGivers.xls"
+download.file(xls_url, here::here("data", "s008_data", "some_file.xls"), mode = "wb")
+#I'm not sure what mode = "wb" does, but there's info in the class guide and it's apparently SUPER important to avoid corrupting the file
+```
+
+There’s handy trick to extract the filename from the URL:
+
+```{r}
+file_name <- basename(xls_url)
+download.file(xls_url, here::here("data", "s008_data", file_name), mode = "wb")
+```
+
+And then import the file into R
+```{r}
+read_excel(here::here("data", "s008_data", file_name))
+```
+
+-----
+## Grabbing things from SPSS files
+
+(manually downloaded the file from the website rather than attempting code)
+
+Load in the data using the haven package:
+
+```{r}
+(clevel <- haven::read_spss(here::here("data", "s008_data", "clevel.sav")))
+```
+
+SPSS uses "labelled" rather than factors, and you have to convert that manually:
+
+```{r}
+clevel_cleaned <-
+  clevel %>% 
+  mutate(language = as_factor(language),
+         gender = as_factor(gender),
+         isClevel = factor(isClevel, 
+                           levels = c(0, 1), 
+                           labels = c("No", "Yes"))
+  ) %>% 
+  print()
+```
+
+You can then write it as a simpler csv so that next time you don't have to worry about it:
+```{r}
+write_csv(clevel_cleaned, here::here("data", "s008_data", "clevel_cleaned.csv"))
+```
+
+----
+## Saving plots!
+
+... make sure you have all of the packages you need...
+
+```{r}
+suppressPackageStartupMessages(library(ggthemes))
+```
+
+
+Make a cool plot:
+
+```{r}
+clevel_plot <-
+  clevel_cleaned %>% 
+  mutate(isClevel = recode(isClevel, 
+                           No = "Below C-level", 
+                           Yes = "C-level"),
+         gender = recode(gender,
+                         Female = "Women",
+                         Male = "Men")) %>% 
+  ggplot(aes(paste(isClevel, gender, sep = "\n"), Extraversion, color = gender)) +
+  geom_boxplot() +
+  geom_jitter(height = .2) +
+  scale_color_manual(values = c("#1b9e77", "#7570b3")) +
+  ggtitle("Extraversion Stan Scores") +
+  scale_y_continuous(breaks = 1:9) +
+  ggthemes::theme_fivethirtyeight()
+```
+
+To save plots, use `ggsave` rather than `pdf()`.  The output is better and the workflow is more automatic.  Make sure you have the right packages for the output format you want...
+
+```{r}
+suppressPackageStartupMessages(library(svglite))
+```
+
+You can save to several formats. Generally, work with a vector format like .svg, .eps, or .pdf. Vector graphics represent the image as a series of data points and equations. This means that they can be made smaller or larger or zoomed in on without damaging the image quality.
+Otherwise, go for .png for graphs/etc.  There's more info on the guide.
+
+```{r}
+dir.create(here::here("output", "figures"), recursive = TRUE)
+ggsave(here::here("output", "figures", "clevel_extraversion.svg"), clevel_plot)
+#and some other options:
+ggsave(here::here("output", "figures", "clevel_extraversion.pdf"), clevel_plot)
+ggsave(here::here("output", "figures", "clevel_extraversion.tiff"), clevel_plot)
+ggsave(here::here("output", "figures", "clevel_extraversion.png"), clevel_plot)
+```
+
+----
+## Organizing project folders
+
+Root folder: README.md and the .Rproj
+
+Key Subfolders:
+* data: Stores all of your data files for a project
+  * Have subfolders for different dates, waves, groups, etc. as needed. If you plan on saving cleaned data, having separate data-raw and data folders is a good idea.
+* markdown: Stores your RMarkdown docuemnts.
+* output: Stores any output your scripts generate
+  * Depending on how many figures and other output files you will create, you might want to split/subfolder this into figures, reports, etc.
+  
+Other possible folders:
+* scripts or src or R: Folders to store functions and scripts that you call from your markdown (e.g., a data import and cleaning script)
+* tests: A folder that includes tests to check that your scripts or results are accurate. Check out the testthat package.
+* templates: A folder to hold template files (e.g., RMarkdown templates, Word templates, CSS files for HTML output, TeX templates for PDF output)
+* doc: For documentation (e.g., variable codebooks, style guides),
+* admin: For adminstrative documents (e.g., IRB approval, grant information)
