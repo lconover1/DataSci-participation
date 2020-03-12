@@ -283,5 +283,11 @@ Explore how different forms of row binding work behave here, in terms of the
 country variable in the result. 
 
 ```{r}
-
+bind_rows(df1, df2)
 ```
+Stuff happens with a lot of warnings.
+
+```{r}
+rbind(df1, df2)
+```
+
