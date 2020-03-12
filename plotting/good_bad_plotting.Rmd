@@ -1,0 +1,83 @@
+---
+title: "good_bad_plotting"
+output: 
+  html_document:
+    keep_md: true
+    theme: paper
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library("tidyverse")
+```
+ 
+ 
+Good plot:
+```{r}
+ggplot(airquality, aes(`Month`, `Temp`, group = `Month`)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_jitter(alpha = 0.3) +
+    labs(x = "",
+         y = "",
+         title="Maximum temperature by month") +
+    theme_bw() + 
+    scale_x_continuous(breaks = c(5, 6, 7, 8, 9), 
+                       labels = c("May", "June", "July", "August", "September")) +
+    annotate("text", x = 4.08, y = 95, label="°F", size = 8) + #this line is scaling so you can see the temp diff better
+    coord_cartesian(xlim = c(4.5, 9.5),
+                    clip = 'off') + 
+    theme(panel.grid.minor = element_blank(),
+          panel.background = element_blank(), 
+          axis.line = element_line(colour = "gray"),
+          panel.border = element_blank(),
+          text = element_text(size=18)
+          )
+```
+
+
+Bad plot from the same starting point:
+```{r}
+ggplot(airquality, aes(`Month`, `Temp`, group = `Month`)) +
+    geom_boxplot() +
+    geom_jitter(aes(color = Temp)) +
+    labs(x = "month",
+         y = "temperature") +
+    theme_dark() + 
+    scale_x_continuous(breaks = c(5, 6, 7, 8, 9)) +
+    coord_cartesian(xlim = c(4.5, 9.5),
+                    clip = 'off') 
+```
+ 
+Making two plots side-by-side"
+```{r}
+library(patchwork)
+library(gridExtra)
+```
+
+The order of the plots pretty much look like they follow arithmetic?
+
+Next to each other is "+"
+```{r}
+p_mpg <- ggplot(mtcars, aes(factor(cyl), mpg, color = factor(cyl))) + 
+    geom_boxplot() + theme_bw() + xlab("No. of cylinders") + ylab("MPG")
+
+p_hp <- ggplot(mtcars, aes(factor(cyl), hp, color = factor(cyl))) + 
+    geom_boxplot() + theme_bw() + xlab("No. of cylinders") + ylab("Horsepower")
+
+p_mpg + p_hp 
+```
+
+
+One on top of another is "/"
+```{r}
+p_mpg / p_hp
+```
+
+```{r}
+p_mpg + p_hp + plot_layout(guides = 'collect')
+
+```
+
