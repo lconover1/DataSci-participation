@@ -1,0 +1,194 @@
+---
+title: "class_model_fitting"
+author: "Laura Conover"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(broom))
+suppressPackageStartupMessages(library(gapminder))
+set.seed(1234)
+
+theme_set(theme_minimal())
+```
+
+A linear model is a specific and very useful type of model. A linear model says that if we change the predictor variable x by a certain amount, we expect the response variable y to also change by a specific (constant) amount. Most statistics we use in psychology are linear models (e.g., correlations, t-tests, regression, ANOVA, ANCOVA, …)
+
+
+Linear models have the generic form y=β0+β1*x, where y is the outcome of interest, x is the explanatory or predictor variable, and β0 and β1 are parameters that reflecct the relationship between the two variables.
+
+We use the observed data for x and y to generate a fitted model, where we make our best guess as to the true values for the β0 and β1  parameters by picking values that best fit the data.
+
+Let’s look at some simulated data:
+
+
+```{r}
+ggplot(modelr::sim1, aes(x, y)) + 
+  geom_point()
+```
+
+This looks like a linear relationship. We could randomly draw prediction lines. (That is, we could randomly generate values for β0 and β1:
+
+```{r}
+models <- tibble(
+  a1 = runif(250, -20, 40),
+  a2 = runif(250, -5, 5)
+)
+
+ggplot(modelr::sim1, aes(x, y)) + 
+  geom_abline(aes(intercept = a1, slope = a2), data = models, alpha = 1/4) +
+  geom_point()
+```
+
+Obviously some of these lines are better than others, but we need a definition of “better” to separate good sets of parameter values from bad sets of parameter values. One approach that is widely used called **least squares**. Least squares means that β0 and β1 are chosen to minimize the sum of the squares of the errors of the predictions made by the model. The errors in prediction (how far are the points from their predicted values [the line]?) are the vertical difference between the actual values for y and the predicted values for y (the points on the line).
+
+
+You can use ggplot2 to draw the best-fit line:
+```{r}
+ggplot(modelr::sim1, aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+## `geom_smooth()` using formula 'y ~ x'
+```
+
+Model fitting methods usually use a common format in R:
+
+`method(formula, data, options)`
+
+In R, formulas take the form y ~ x1 + x2 + ... + xp.
+
+The left side of the formula (before ~) is the response variable. The right side of the formula (after ~) are the predictors. Separate multiple predictors using +. 
+
+y, x1, x2, etc. are the column names in your data frame.
+
+## Exercise 1
+Fit a linear regression model to life expectancy (“Y”) from year (“X”) by filling in the formula.
+
+First, create a subset of the gapminder dataset containing only data from Europe:
+
+```{r}
+gapminder_europe <- filter(gapminder, continent == "Europe")
+```
+
+Now, use the lm() function to fit a linear model:
+
+```{r}
+mod_europe <- lm(lifeExp ~ year, data = gapminder_europe) %>% 
+print
+```
+
+Does that mean that the life expectency at “year 0” was equal to -397.7646?!
+
+We can modify how we fit the model to make the value of the Intercept more meaningful. Let’s fit it so that it reflects the predicted life expectancy value for the first year in the data, 1952. To do that, we use the I() function. I() lets you tell R to fit the model to an arithmetic transformation of a variable. For example:
+
+```{r}
+mod_europe <- lm(lifeExp ~ I(year - 1952), data = gapminder_europe) %>% 
+  print
+```
+
+In this model, the (Intercept) coefficient is the predicticed life expectancy in 1952, and the I(year - 1952) coefficient  is the expected increase in life expectancy each year.
+
+## Broom package
+Getting predicted values and confidence intervals:
+```{r}
+#predict(mod_europe, interval = "confidence") # can abbreviate to "conf"
+#commented out because this is a really long output
+```
+
+Or we can predict on a new dataset:
+
+```{r}
+new_data_france <- tibble(year = c(1955, 1964, 1971, 1998, 2000, 2006))
+predict(mod_europe, newdata = new_data_france, interval = 'confidence')
+```
+
+
+You can do the same thing to get the residuals, using `resid(mod_europe)` instead of `predict`
+
+The augment() function from the broom package can compute fitted and residual values, as well as several model diagnostic statistics for each data point. augment() always returns a data frame, so it is more convenient to use for things like plotting than predict or resid. It doesn’t currently return confidence/prediction intervals for lm objects, though.
+
+
+`augment(mod_europe, data = gapminder_europe)`
+
+A linear model assumes that the residuals are normally distributed, so looking at a plot of the residuals is useful to determine if our model is poorly fit:
+
+```{r}
+augment(mod_europe, data = gapminder_europe) %>% 
+  ggplot(aes(x = .resid)) +
+  geom_histogram() +
+  theme_minimal() +
+  xlab("Model residuals") +
+  ylab("Count")
+```
+
+A plot of the residuals against the observed or fitted values can also help to show if a specific range of values is more poorly predicted than others:
+
+```{r}
+augment(mod_europe, data = gapminder_europe) %>% 
+  ggplot(aes(x = year, y = .resid)) +
+  geom_point() +
+  theme_minimal() +
+  xlab("Year") +
+  ylab("Model residuals")
+```
+
+Rather than using all of these indivdual functions, the broom::tidy() function puts them all together and conveniently returns the results as a data frame (great for tabling or plotting):
+
+```{r}
+tidy(mod_europe, conf.int = TRUE)
+
+```
+
+Looking at these results, we can see that the predicted average life expectancy for European countries in 1952 is 65.8005521 years [with a 95% confidence interval of 65.0493018, 66.5518024, indicating a range of true values that are reasonably compatible with our data]. Each year, the predicted life expectancy increases by 0.2219321 years [95% CI 65.0493018, 66.5518024].
+
+Finally, we might want to evaluate overall how well our model fits the data. For example, how well does year alone account for all of the variability in life expectancy in European countries over time? We can obtain a variety of model fit statistics using the broom::glance() function.
+
+```{r}
+glance(mod_europe)
+```
+
+In this data frame, adj.r.squared is the squared correlation between the predicted values and the actual values for life expectancy. The square root of this value is useful for evaluating model fit. Here, R = 0.7050283, indicating a very strong relationship between year and life expectancy, but there is still some variability left over across countries in a single year. The sigma value is the left over (residual) standard deviation of the response variable (life expectancy) after accounting for the predictors (year). Here, within a single year, countries’ life expectancies have a standard deviation of 3.8530964.
+
+If you want a full ANOVA table for your model, use the `anova()` function.
+
+## Multiple predictors
+
+If you include a character or factor variable as a predictor, R will turn this into a series of dummy-coded contrast variables:
+
+```{r}
+mod_europe_country <- lm(lifeExp ~ country, data = gapminder_europe) %>% 
+  print
+```
+
+You can fit models with multiple predictors by adding them to the right side of your formula:
+
+```{r}
+mod_europe_gdp <- lm(lifeExp ~ year + gdpPercap, data = gapminder_europe) %>% 
+print
+```
+
+You can specify squared terms or other arithmetic transformations using the I() function:
+```{r}
+mod_europe_yrsq <- lm(lifeExp ~ year + I(year^2), data = gapminder_europe) %>% 
+  print
+```
+
+You can specify interactions between two variables using *. This will include both variables themselves (year, log(gdpPercap)) and their product/interaction (year:gdpPercap):
+
+```{r}
+mod_europe_interaction <- lm(lifeExp ~ year * log(gdpPercap), data = gapminder_europe) %>% 
+  print
+```
+
+And you can use anova() to compare two nested models:
+```{r}
+anova(mod_europe, mod_europe_yrsq)
+```
+
