@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(broom))
 suppressPackageStartupMessages(library(gapminder))
+suppressPackageStartupMessages(library(psychTools))
 set.seed(1234)
 
 theme_set(theme_minimal())
@@ -190,5 +191,40 @@ mod_europe_interaction <- lm(lifeExp ~ year * log(gdpPercap), data = gapminder_e
 And you can use anova() to compare two nested models:
 ```{r}
 anova(mod_europe, mod_europe_yrsq)
+```
+
+---
+## Activity
+Use the psych::bfi dataset. Compute mean scores for each of the Big Five scales for each person. Then, fit linear models to answer the following questions. Present your results using both tables of results and figures.
+
+1 Do men and women differ on the Big Five traits? How big are the differences?
+2 Do the Big Five traits increase or decrease with Age? Is there a linear or squared trend?
+3 Do the Big Five traits differ across educational levels? Treat education as a categorical variable.
+4 How well do age and gender together predict the Big Five traits?
+5 In your models in part (4), do the residuals appear to be normally distributed? Are they consistent across age ranges and gender groups?
+
+```{r}
+bfi <- psychTools::bfi
+keys <- replace_na(psychTools::bfi.dictionary$Keying, 1)
+
+bfi_mean <- bfi %>% mutate_at(names(bfi)[keys == -1], ~ 7 - .x) %>% 
+  mutate(A = rowMeans(select(., A1:A5), na.rm = TRUE),
+         C = rowMeans(select(., C1:C5), na.rm = TRUE),
+         E = rowMeans(select(., E1:E5), na.rm = TRUE),
+         N = rowMeans(select(., N1:N5), na.rm = TRUE),
+         O = rowMeans(select(., O1:O5), na.rm = TRUE),
+         gender = recode_factor(gender, `1` = "male", `2` = "female"),
+         education = recode_factor(education, `1` = "some hs", 
+                                              `2` = "hs", 
+                                              `3` = "some college", 
+                                              `4` = "college",
+                                              `5` = "graduate degree")) %>% 
+  select(gender:O)
+  
+mod_gender_a <- lm(A ~ gender, data = bfi_mean)
+mod_gender_c <- lm(C ~ gender, data = bfi_mean)
+mod_gender_e <- lm(E ~ gender, data = bfi_mean)
+mod_gender_n <- lm(N ~ gender, data = bfi_mean)
+mod_gender_o <- lm(O ~ gender, data = bfi_mean)
 ```
 
