@@ -1,0 +1,202 @@
+---
+title: "Functional Programming"
+output: 
+  html_document:
+  keep_md: true
+  theme: paper
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+Guide site, because you'll likely need it, is [here](https://wiernik-datasci-guide.netlify.com/lets-get-functional.html)
+
+Today, we are going to expand on last week’s topic of model-fitting to cover three important topics: 
+1. Using a “functional programming” approach to make your code more efficient and avoid “repeating yourself”—copying and pasting essentially the same code over and over again 
+2. As part of the functional programming approach, how to write your own functions in R to do useful things.
+3. ?????
+
+```{r}
+library(tidyverse)
+library(broom)
+library(psychTools)
+```
+
+The idea of functional programming is that, rather than writing bespoke code for each new analysis or each new variable, we can write the code once and then apply it over and over again as needed for new analyses.
+
+Compared to the code in the "model fitting" activity (using the bfi dataset to look at gender differences), the following code using the `map()` function is much shorter and easier to reproduce:
+
+```{r}
+# You do still have to do the set-up of creating the variable "bfi_mean"
+bfi <- psychTools::bfi
+keys <- replace_na(psychTools::bfi.dictionary$Keying, 1)
+
+bfi_mean <- bfi %>% mutate_at(names(bfi)[keys == -1], ~ 7 - .x) %>% 
+  mutate(A = rowMeans(select(., A1:A5), na.rm = TRUE),
+         C = rowMeans(select(., C1:C5), na.rm = TRUE),
+         E = rowMeans(select(., E1:E5), na.rm = TRUE),
+         N = rowMeans(select(., N1:N5), na.rm = TRUE),
+         O = rowMeans(select(., O1:O5), na.rm = TRUE),
+         gender = recode_factor(gender, `1` = "male", `2` = "female"),
+         education = recode_factor(education, `1` = "some hs", 
+                                              `2` = "hs", 
+                                              `3` = "some college", 
+                                              `4` = "college",
+                                              `5` = "graduate degree")) %>% 
+  select(gender:O)
+
+#Then the shortcut kicks in:
+
+bfi_just_traits <- select(bfi_mean, A:O)
+mods_gender <- 
+  map(bfi_just_traits,
+      ~ lm(.x ~ gender, data = bfi_mean)
+      )
+
+# Or, using the pipe without making an intermediate object
+
+mods_gender <- 
+  bfi_mean %>% 
+  select(A:O) %>% 
+  map(~ lm(.x ~ gender, data = bfi_mean))
+```
+
+This kicks out a list of models (one for each trait).
+
+## 12.4 Working with `map()`
+
+`map()` takes a data frame, list, or vector as as input and applies the requested function to each column of the data frame or element of the list/vector.
+
+If the input is a list, the function f() is applied to each element of the list. When the input is a data frame, the function f() is applied to each column of the data frame.
+
+Its arguments look like this: `map(.x, .f, ...)`
+
+For example, this code takes each column of the cars data set and applies the mean function: `map(cars, mean)`
+
+You can see a similar example above where I applied the summary() function to each element of the mods_gender list.
+
+Often, you will want to specify additional arguments for the function you are mapping. The easiest way to do that is using "~". With ~, you can write out a whole function call, similar to `lm(A ~ gender, data = bfi_mean)`. For example: `map(cars, ~ mean(.x, trim = .1))`
+
+When you use ~, in the function call, .x is a placeholder that means “whatever the current variable from the data frame is”. So, the above code means “Take each column of cars and pass to to the mean() function with the argument trim = .1.”
+
+Accordingly, the gender modeling code used earlier (`mods_gender <- bfi_mean %>% select(A:O) %>% map(~ lm(.x ~ gender, data = bfi_mean))`) means “Take bfi_mean and select columns A through O. For each of these columns, predict the column using the lm() function with gender from the bfi_mean data frame as a predictor.”
+
+## 12.4.1 More details on map()
+`map()` is the basic mapping function in the purrr package. It always returns a **list**. This is useful for a lot of purposes, but there are additional `map_*()` functions that also return other outputs.
+
+For example, let’s say that I wanted to return just the r.squared value for each of the gender–Big Five trait models. I could use the `map_dbl()` function, which returns a numeric vetor instead of a list:
+
+```{r}
+rsq_gender <- 
+  bfi_mean %>% 
+    select(A:O) %>% 
+    map_dbl(~ lm(.x ~ gender, data = bfi_mean) %>% 
+                summary() %>% .$r.squared)
+rsq_gender
+```
+
+`map_dfc()` combines all of the results into the *columns* of a new data frame. On the other hand, `map_dfr()` combines all of the results into the *rows* of a new data frame. For example, to extract the coefficients for all of the models:
+
+```{r}
+coef_gender <- 
+  bfi_mean %>% 
+    select(A:O) %>% 
+    map_dfr(~ lm(.x ~ gender, data = bfi_mean) %>% 
+                coef(),
+            .id = "Trait")
+coef_gender
+```
+
+Similarly, to get the whole coefficient results tables for each model:
+
+```{r}
+coef_summary_gender <- 
+  bfi_mean %>% 
+    select(A:O) %>% 
+    map_dfr(~ lm(.x ~ gender, data = bfi_mean) %>% 
+                tidy(conf.int = TRUE),
+            .id = "Trait")
+coef_summary_gender
+```
+
+
+The `.id` argument gives the name of the variable where the model each row of results came from.
+
+You can also map across 2 data frames/lists at once using the map2_() functions and across as many lists as you want at once using the pmap_*() functions. Check out Chapter 21 of R for Data Science for some examples and exercises if you are interested.
+
+## 12.5 Writing your own functions
+map() is a powerful tool for performing the same analysis repeatedly, but it’s possible for the function code you use inside map() to get real messy real fast. For example, look at this example from above:
+
+```{r}
+coef_summary_gender <- 
+  bfi_mean %>% 
+    select(A:O) %>% 
+    map_dfr(~ lm(.x ~ gender, data = bfi_mean) %>% 
+                tidy(conf.int = TRUE),
+            .id = "Trait")
+```
+
+The function inside `map_dfr()` is a pipe: `~ lm(.x ~ gender, data = bfi_mean) %>% tidy(conf.int = TRUE)`
+
+Especially if a pipe like this gets very long, that can be hard to read.
+
+When you write a function with ~, that’s called an “anonymous function” — you are making up that function on the spot and it isn’t being saved for future use. If your function is complex, it’s better to write and save your function first, then call your saved function object inside `map()`.
+
+For example, we can rewrite the above as:
+
+```{r}
+get_coef_summary_gender <- function(.x, data) {
+  mod <- lm(.x ~ gender, data = bfi_mean)
+  return(tidy(mod, conf.int = TRUE))
+}
+
+coef_summary_gender <- 
+  bfi_mean %>% 
+    select(A:O) %>% 
+    map_dfr(get_coef_summary_gender, .id = "Trait")
+coef_summary_gender
+```
+
+There are two (three) major advanges of writing and saving a function, rather than using an anonymous function: 
+1. Your code is often more readable. 
+2. You can reuse the function multiple times throughout your analyses. 
+3. Its easier to fix bugs or typos you might make because your code is only in one spot.
+
+To write a function in R, use the following template:
+
+function_name <- function(arguments) {
+  # function code
+}
+
+function_name <- function(arg1, arg2, arg3 = FALSE) {
+  # function steps go here
+  return(result)
+}
+
+A function as three parts:
+Its *name*: how do we call it?
+Its *arguments*: what are its inputs?
+Its *body*: what does it do with the inputs?
+
+First, pick a name for your function. Like all of your object names, make your function names clear and unambiguous. `my_awesome_function()` doesn’t tell us anything about what the function does. Usually, I prefer to make my function names verbs to make it clear that they do something.
+
+Then, tell R that you are making a function by assigning `function() {}` to your function name:
+
+`function_name <- function() {}`
+
+Your arguments go inside the parentheses after function. Follow the same basic guidelines for naming arguments as you do for naming any object in R. Give your arguments understandable names and be consistent in your naming scheme.
+
+To give an argument a default value, specify the default with =. For example, this function will take a vector of numbers and draw a histogram of them, with the default color being blue:
+
+```{r}
+plot_histogram <- function(data, color = "blue") {
+  tbl <- tibble(data = data)
+  ggplot(tbl, aes(x = data)) +
+  geom_histogram(color = color, fill = color)
+}
+```
+
+If a user does specify a different color, that will override the defaults.
+
+For more guidance on writing R functions, including advanced features and testing, see Chapter 19 of R for Data Science. 
