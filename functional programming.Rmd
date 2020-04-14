@@ -200,3 +200,25 @@ plot_histogram <- function(data, color = "blue") {
 If a user does specify a different color, that will override the defaults.
 
 For more guidance on writing R functions, including advanced features and testing, see Chapter 19 of R for Data Science. 
+
+# 12.6 Activities
+
+## 12.6.1 Activity 1: bfi Models Part 2: Map Attack!
+
+Use the psych::bfi dataset again. Compute mean scores for each of the Big Five scales for each person. Then, perform the same analyses as last week. But this time, rather than writing out the code for each model and variable separately, use `map()` or related functions to do so in a more functional programatic way. Fit linear models for each Big Five trait, and present your results using both tables of results and figures.
+
+1 Do men and women differ on the Big Five traits? How big are the differences?
+2 Do the Big Five traits increase or decrease with Age? Is there a linear or squared trend?
+3 Do the Big Five traits differ across educational levels? Treat education as a categorical variable.
+4 How well do age and gender together predict the Big Five traits?
+5 In your models in part (4), do the residuals appear to be normally distributed? Are they consistent across age ranges and gender groups?
+
+## 12.6.2 Activity 2: Individual bfi Reports
+Select 10 people from the bfi dataset. Prepare an individualized report for each person presenting the following information:
+
+1 Their mean score on each of the Big Five scales.
+2 The percentile of their mean score compared to the rest of the full sample of 2800 people (hint: use the `quantile()` function).
+3 A profile plot illustrating their level on each Big Five trait. 
+Bonus: In addition, provide individualized narrative descriptions of what each of their scores means (e.g., based on whether they are “high”, “medium”, or “low” on each trait). 
+
+To save yourself a bunch of tedious report writing, write a function and consider using a `map_*()` function to automate the process. Take a look at Hadley’s slides and video for some examples! He has R code linked from his talk as well.
