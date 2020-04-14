@@ -114,59 +114,85 @@ hist(binomDistSamp)
 
 1. Create a loop that generates a number from your favorite distribution and writes it to a column of your matrix. The matrix should have 20 rows and 1 column. You can use one of the distribution functions built into R, or create your own using `sample()`.
 ```{r}
-matrix(FILL_THIS_IN)
+set.seed(1337)
+#Creates our matrix
+binomWPExamp <-matrix(nrow=20,ncol=1)
+#for loop to iterate over rows.  Does not need to have a second nested loop because there's only one column
+for(j in 1:20){
+  binomWPExamp[j,1] <- rbinom(n=1,size=396,prob=.5)
+  }
 
-for(FILL_THIS_IN)
-{
-  FILL_THIS_IN
-}
-hist(FILL_THIS_IN)
+dataBinomWPExamp <- as.data.frame(binomWPExamp)
+
+hist(binomWPExamp)
 ```
 
 2. Write a loop within a loop. First, create a matrix with 20 rows and 6 columns. Save a number from your favorite distribution into each cell of the matrix. You can use one of the distribution functions built into R, or create your own using `sample()`. The distribution of responses should be the same for every person.
 
 ```{r}
-matrix(FILL_THIS_IN)
-
-for(FILL_THIS_IN)
-{
-  for (FILL_THIS_IN)
-  {
-   FILL_THIS_IN
-  }
+set.seed(1337)
+#Creates our matrix
+binomWPExamp2 <-matrix(nrow=20,ncol=6)
+#for loop to iterate over individuals
+for(i in 1:20){
+  #for loop to iterate over items within individuals
+  for(j in 1:6){
+      binomWPExamp2[i,j] <- rbinom(n=1,size=396,prob=.5) 
+    }
 }
+dataBinomWPExamp2 <- as.data.frame(binomWPExamp2)
+dataBinomWPExamp2Long <- gather(dataBinomWPExamp2, key = "key", value = "value", V1:V6, factor_key = FALSE)
 
-hist(FILL_THIS_IN)
+#switched to ggplot instead of hist
+ggplot(dataBinomWPExamp2Long, aes(value)) +
+  geom_histogram(binwidth=0.5,color="black", fill="white")
 ```
 
-3. Repeat 2, but this time make your distribution centered within each person.
+3. Repeat 2, but this time make your distribution centered within each person. - I'm not sure how to change this for distributions that already exist in R, so I'm just using the normal distribution example from the guide
 
 ```{r}
-matrix(FILL_THIS_IN)
-
-for(FILL_THIS_IN)
-  {
-  for(FILL_THIS_IN)
-    {    
-    if(FILL_THIS_IN
-       {
-         FILL_THIS_IN
-       }
-    else
-      {
-        FILL_THIS_IN
-      }
+set.seed(1337)
+#Creates our matrix
+normalWPSample <-matrix(nrow=20,ncol=6)
+#for loop to iterate over individuals
+for(i in 1:20){
+  #for loop to iterate over items within individuals
+  for(j in 1:6){
+    #first response randomly generated and set as the center point for all remaining responses
+    if(j==1){ #remember j is our row, so this will sample a new center point whenever we are  on item 1 for a person.
+      wInMean<-sample(1:5,1) #sets our mean. Could save in our matrix if we want to know it
+          #We will sample a value that is the center point, or deviates from it by 1 or 2
+      normalWPSample[i,j] <- sample(c(wInMean - 2, wInMean - 1, wInMean, 
+                                      wInMean + 1, wInMean + 2), 
+                                    #probabilities to sample these values
+                                    1, replace=T, prob = c(6, 24, 40, 24, 6)) 
+    }
+    #all responses past first response. This function is the same as above, 
+    #but we don't need to sample a value for the center point because we already have it
+    else{
+      normalWPSample[i,j] <- sample(c(wInMean - 2, wInMean - 1, wInMean, 
+                                      wInMean + 1, wInMean + 2), 
+                                    1, replace=T, prob = c(6, 24, 40, 24, 6)) 
     }
   }
+}
+dataNormalWPSample <- as.data.frame(normalWPSample)
+dataNormalWPSampleLong <- gather(dataNormalWPSample, key = "key", value = "value", V1:V6, factor_key = FALSE)
 
-hist(FILL_THIS_IN)
+#switched to ggplot instead of hist
+ggplot(dataNormalWPSampleLong, aes(value)) +
+  geom_histogram(binwidth=0.5,color="black", fill="white")
 ```
 
 3. If needed, replace any out-of-bounds data.
 ```{r}
-FILL_THIS_IN
+#If there is a number greater than 5 replace it with 5
+dataNormalWPSampleLong[dataNormalWPSampleLong>5]<-5
+#If there is a number less than 1 replace it with 1
+dataNormalWPSampleLong[dataNormalWPSampleLong<1]<-1
 
-hist(FILL_THIS_IN)
+ggplot(dataNormalWPSampleLong, aes(value)) +
+  geom_histogram(binwidth=0.5,color="black", fill="white")
 ```
 
 ###Return to guide
