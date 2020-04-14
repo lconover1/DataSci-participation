@@ -86,23 +86,26 @@ t.test(dataNormalCombined$Values~dataNormalCombined$Group)
 1. Sample from 5 numbers that follow an inverted normal distribution. (i.e. the probabilities are highest at the end points and lowest in the center).
 
 ```{r}
-
-sample(c(FILL_THIS_IN), 200, replace=T, prob = c(FILL_THIS_IN)) 
-hist(FILL_THIS_IN)
+#this is not a true inverted normal distribution. but it's symmetrical and does the general thing?
+sample(c(1,2,3,4,5), 200, replace=T, prob = c(30,15,10,15,30)) %>% 
+  hist()
 
 ```
 
 2. Pick one of the distributions that are [built into R](https://www.stat.umn.edu/geyer/old/5101/rlook.html) and replicate that distribution with the sample function. Make sure you graph both the original distribution and the reproduced distribution so you can make sure they match.
 
 ```{r}
-#Add code for your initial distribution here. Make sure to use rDistributionFunction so that random numbers are generated.
-FILL_THIS_IN
-hist(FILL_THIS_IN)
+#Add code for your initial distribution here. Make sure to use rDistributionFunction (ie, rbinom, rnorm, rchisq, etc) so that random numbers are generated.
+set.seed(1337)
+
+binomDist <- rbinom(n=10000,size=396,prob=.5)
+hist(binomDist)
 
 #Replicate your distribution with the sample function.
-sample(c(seq(FILL_THIS_IN)), #scale points
-       10000, replace=T, prob = c(FILL_THIS_IN)) 
-hist(FILL_THIS_IN)
+binomDistSamp <- sample(c(seq(0,396)), #scale points
+       10000, replace=T, prob = c(dbinom(seq(0,396),size = 396,prob = .5)))
+hist(binomDistSamp)
+
 ```
 
 ### Back to guide
