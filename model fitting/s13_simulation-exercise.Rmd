@@ -209,5 +209,5 @@ You've now seen a few different methods we can use to simulate data. At this poi
 3. Write a summary of what you simulated and what you found.
 NOTE: the resources section at the top of the main lab may be helpful if you're having trouble figuring out the right code to simulate what you want. This contains walkthroughs for different functions and simulation methods not covered here.
 ```{r}
-FILL_THIS_IN
+# Current events have zapped pretty much all of my creativity and curiosity, so I can follow set directions but not generate new things.  Which does not bode well for my intended career as an academic, but hey, we are all learning new things about ourselves, right?
 ```
